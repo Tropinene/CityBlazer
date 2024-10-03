@@ -128,6 +128,9 @@ function highlightCityOnMap(cityName, coordinates) {
         }
     }).addTo(map);
 
+    // 在图层上绑定一个弹出框，显示城市名称
+    geojsonLayer.bindPopup(`<b>${cityName}</b>`);  // 这里显示的是城市名称，可以根据需要调整
+
     // 保存高亮层到全局变量，以便后续移除
     if (!window.highlightedLayers) {
         window.highlightedLayers = {};
