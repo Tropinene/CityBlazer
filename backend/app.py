@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, render_template, send_from_directory
 from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
+import random
 
 # 加载环境变量
 load_dotenv()
@@ -59,6 +60,29 @@ def get_coordinates():
     print(f"[*] Get city coordinates.")
     print(coordinates_data[0])
     return jsonify({"coordinates": coordinates_data}), 200
+
+
+# 随机生成城市名的函数
+def randomGenCities(count):
+    # 获取所有城市的名称
+    city_names = list(collection.find({}, {"_id": 0, "name": 1}))
+
+    # 如果数据库中的城市数目少于请求的数量，返回所有城市
+    if count > len(city_names):
+        count = len(city_names)
+
+    # 随机选择 count 个城市
+    random_cities = random.sample(city_names, count)
+
+    # 返回城市名称列表
+    return [city['name'] for city in random_cities]
+
+
+# 定义 API 路由来获取随机城市名
+@app.route('/random_cities/<int:count>', methods=['GET'])
+def get_random_cities(count):
+    cities = randomGenCities(count)
+    return jsonify(cities)
 
 
 if __name__ == "__main__":

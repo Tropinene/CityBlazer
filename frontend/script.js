@@ -15,6 +15,7 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
 // 处理城市输入并高亮显示
 document.getElementById('highlightBtn').addEventListener('click', () => {
     const cityName = document.getElementById('cityInput').value;
+    cityNames = cityNames.split(/\s*,\s*/);
     sendCityToBackend(cityName);
 });
 
@@ -22,14 +23,29 @@ document.getElementById('highlightBtn').addEventListener('click', () => {
 document.getElementById('cityInput').addEventListener('keypress', (event) => {
     if (event.key === 'Enter') {
         const cityName = document.getElementById('cityInput').value;
+        cityNames = cityNames.split(/\s*,\s*/);
         sendCityToBackend(cityName);
     }
 });
 
+// 随机点亮多个城市
+document.addEventListener('click', async () => {
+    let m = 10;
+    let n = 1000;
+    let count = Math.floor(Math.random() * (n - m + 1)) + m;
+    console.log("[+] The number of random city is " + count);
+
+    try {
+        const cityNames = await randomGenCities(count);
+        sendCityToBackend(cityNames);
+    } catch (error) {
+        console.error('Error in getting random cities:', error);
+    }
+})
+
 // 发送多个城市名称到后端并接收坐标数据
 function sendCityToBackend(cityNames) {
     const url = `http://127.0.0.1:5000/get_coordinates`;
-    cityNames = cityNames.split(/\s*,\s*/);
 
     // 使用 fetch 发送 POST 请求到后端
     fetch(url, {
@@ -48,7 +64,7 @@ function sendCityToBackend(cityNames) {
             });
         } else {
             // 如果没有找到城市，显示错误提示
-            console.log('Fail to find data!');
+            console.log('[Error] Fail to find data!');
         }
     })
     .catch(error => {
@@ -100,5 +116,27 @@ function highlightCityOnMap(cityName, coordinates) {
     window.highlightedLayers[cityName] = geojsonLayer;
 
     // 自动调整地图视野，以适应多边形区域
-    map.fitBounds(geojsonLayer.getBounds());
+//    map.fitBounds(geojsonLayer.getBounds());
+}
+
+async function randomGenCities(count) {
+    try {
+        console.log("[+] In function 'randomGenCities'.")
+        // 发起GET请求，获取后端生成的随机城市名称列表
+        const response = await fetch(`/random_cities/${count}`);
+
+        // 确保请求成功
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        console.log("[+] Get city name");
+        // 将响应转换为JSON格式
+        const cities = await response.json();
+
+        // 返回城市名称列表
+        return cities;
+    } catch (error) {
+        console.error('Failed to fetch random cities:', error);
+        return [];
+    }
 }
