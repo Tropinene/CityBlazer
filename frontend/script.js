@@ -98,7 +98,7 @@ function sendCityToBackend(cityNames) {
 
 // 高亮显示多个城市
 function highlightCityOnMap(cityName, coordinates) {
-    console.time('[!] HighlightCityOnMap');
+//    console.time('[!] HighlightCityOnMap');
     // 验证 coordinates 是否是 GeoJSON 格式的多边形
     if (!coordinates || !Array.isArray(coordinates) || coordinates.length === 0) {
         console.error(`[Error] Invalid coordinates for city: ${cityName}`, coordinates);
@@ -136,7 +136,7 @@ function highlightCityOnMap(cityName, coordinates) {
 
     // 自动调整地图视野，以适应多边形区域
 //    map.fitBounds(geojsonLayer.getBounds());
-    console.timeEnd('[!] HighlightCityOnMap');
+//    console.timeEnd('[!] HighlightCityOnMap');
 }
 
 async function randomGenCities(count) {

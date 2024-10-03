@@ -43,15 +43,14 @@ def get_coordinates():
     # 获取请求的城市名称列表
     cities = request.json.get('cities', [])
     # 查询数据库中的城市坐标
-    city_coordinates = []
+    cities_data = collection.find({"name": {"$in": cities}}, {"_id": 0, "name": 1, "coordinates": 1})
 
-    for city in cities:
-        city_data = collection.find_one({"name": city}, {"_id": 0, "name": 1, "coordinates": 1})
-        if city_data:
-            city_coordinates.append({
-                "name": city_data["name"],
-                "coordinates": city_data["coordinates"]
-            })
+    city_coordinates = []
+    for city_data in cities_data:
+        city_coordinates.append({
+            "name": city_data["name"],
+            "coordinates": city_data["coordinates"]
+        })
 
     end_time = time.time()
     total_time = end_time - start_time
