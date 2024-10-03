@@ -1,0 +1,22 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+#map {
+    height: 700px;  /* 设置地图高度 */
+    width: 100%;    /* 设置地图宽度 */
+}
+
+input {
+    margin: 10px;
+    padding: 10px;
+    font-size: 16px;  /* 设置输入框字体 */
+}
+
+button {
+    padding: 10px 15px;
+    font-size: 16px;  /* 设置按钮字体 */
+    cursor: pointer;   /* 鼠标悬停时显示为指针 */
+}

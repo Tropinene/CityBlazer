@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Dream City</title>
+    <link rel="stylesheet" href="style.css">      <!-- 引入自定义样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />  <!-- 引入 Leaflet CSS -->
+</head>
+<body>
+    <input type="text" id="cityInput" placeholder="Enter City Name">  <!-- 输入框 -->
+    <button id="highlightBtn">Search</button>  <!-- 按钮 -->
+
+    <div id="map"></div>  <!-- 地图显示区域 -->
+
+<!--    <div id="result">Waiting for data...</div>-->
+
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>  <!-- 引入 Leaflet JS -->
+    <script src="script.js"></script>  <!-- 引入主 JavaScript 文件 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/6.5.0/turf.min.js"></script>
+</body>
+</html>
