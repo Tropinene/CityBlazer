@@ -7,14 +7,27 @@ const map = L.map('map', {
 });
 
 // 使用 CartoDB Positron 地图样式
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     maxZoom: 20,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
 }).addTo(map);
 
+let originalMapState;  // 用于保存地图的初始状态
+
+// 在地图初始化之后保存初始状态
+tileLayer.on('load', function () {
+    originalMapState = L.layerGroup().addTo(map); // 创建一个新的图层组保存初始状态
+    map.eachLayer(function(layer) {
+        if (layer instanceof L.TileLayer) {  // 只保存TileLayer，或者你可以根据具体需求过滤其他图层
+            originalMapState.addLayer(layer);
+        }
+    });
+    console.log("[+] Map initial state saved.");
+});
+
 // 处理城市输入并高亮显示
 document.getElementById('highlightBtn').addEventListener('click', () => {
-    clearHighlightedCities();
+    resetMapToInitialState();
 
     cityName = document.getElementById('cityInput').value;
     cityName = cityName.split(/\s*,\s*/);
@@ -24,7 +37,7 @@ document.getElementById('highlightBtn').addEventListener('click', () => {
 // 监听回车键事件
 document.getElementById('cityInput').addEventListener('keypress', (event) => {
     if (event.key === 'Enter') {
-        clearHighlightedCities();
+        resetMapToInitialState();
 
         cityName = document.getElementById('cityInput').value;
         cityName = cityName.split(/\s*,\s*/);
@@ -34,7 +47,7 @@ document.getElementById('cityInput').addEventListener('keypress', (event) => {
 
 // 随机点亮多个城市
 document.getElementById('RandomCities').addEventListener('click', async () => {
-    clearHighlightedCities();
+    resetMapToInitialState();
 
     let m = 10;
     let n = 1000;
@@ -92,11 +105,6 @@ function highlightCityOnMap(cityName, coordinates) {
         return;
     }
 
-    // 如果之前已经有高亮的城市，先移除
-//    if (window.highlightedLayers && window.highlightedLayers[cityName]) {
-//        map.removeLayer(window.highlightedLayers[cityName]);
-//    }
-
     // 将数据包装成 GeoJSON 格式
     const geojsonData = {
         "type": "Feature",
@@ -153,17 +161,18 @@ async function randomGenCities(count) {
     }
 }
 
-function clearHighlightedCities() {
-    console.log("[+] In function 'clearHighlightedCities'.");
-    if (window.highlightedLayers) {
-        // 遍历所有已高亮的图层，将其逐个从地图中移除
-        Object.keys(window.highlightedLayers).forEach(cityName => {
-            // 直接从地图中移除图层
-            map.removeLayer(window.highlightedLayers[cityName]);
-        });
+function resetMapToInitialState() {
+    console.log("[+] Resetting map to initial state.");
 
-        // 清空已高亮的图层记录
-        window.highlightedLayers = {};
-        console.log('[+] All highlighted cities removed.');
-    }
+    // 移除当前所有图层
+    map.eachLayer(function(layer) {
+        map.removeLayer(layer);
+    });
+
+    // 恢复到最初保存的原始图层状态
+    originalMapState.eachLayer(function(layer) {
+        map.addLayer(layer);
+    });
+
+    console.log("[+] Map reset to initial state.");
 }
