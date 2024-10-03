@@ -3,6 +3,7 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
 import random
+import time
 
 # 加载环境变量
 load_dotenv()
@@ -37,29 +38,27 @@ def serve_style():
 # 查询城市并返回其坐标
 @app.route('/get_coordinates', methods=['POST'])
 def get_coordinates():
+    start_time = time.time()
+
+    # 获取请求的城市名称列表
     cities = request.json.get('cities', [])
-    print(f"[*] Get city name. {cities}")
+    # 查询数据库中的城市坐标
+    city_coordinates = []
 
-    if not cities:
-        return jsonify({"[Error]": "城市名称不能为空"}), 400
+    for city in cities:
+        city_data = collection.find_one({"name": city}, {"_id": 0, "name": 1, "coordinates": 1})
+        if city_data:
+            city_coordinates.append({
+                "name": city_data["name"],
+                "coordinates": city_data["coordinates"]
+            })
 
-    # 查找所有城市的坐标
-    coordinates_data = []
-    for city_name in cities:
-        city = collection.find_one({"name": city_name})
-        if city:
-            coordinates_data.append({
-                "name": city_name,
-                "coordinates": city.get("coordinates")
-            })
-        else:
-            coordinates_data.append({
-                "name": city_name,
-                "coordinates": None
-            })
-    print(f"[*] Get city coordinates.")
-    print(coordinates_data[0])
-    return jsonify({"coordinates": coordinates_data}), 200
+    end_time = time.time()
+    total_time = end_time - start_time
+    print(f"[INFO] Time taken to process the coordinates: {total_time:.4f} seconds")
+
+    # 返回所有城市的坐标
+    return jsonify({"coordinates": city_coordinates})
 
 
 # 随机生成城市名的函数
@@ -86,4 +85,4 @@ def get_random_cities(count):
 
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=5000)
+    app.run(host='127.0.0.1', port=3000)

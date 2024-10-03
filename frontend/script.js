@@ -14,30 +14,40 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
 
 // 处理城市输入并高亮显示
 document.getElementById('highlightBtn').addEventListener('click', () => {
-    const cityName = document.getElementById('cityInput').value;
-    cityNames = cityNames.split(/\s*,\s*/);
+    clearHighlightedCities();
+
+    cityName = document.getElementById('cityInput').value;
+    cityName = cityName.split(/\s*,\s*/);
     sendCityToBackend(cityName);
 });
 
 // 监听回车键事件
 document.getElementById('cityInput').addEventListener('keypress', (event) => {
     if (event.key === 'Enter') {
-        const cityName = document.getElementById('cityInput').value;
-        cityNames = cityNames.split(/\s*,\s*/);
+        clearHighlightedCities();
+
+        cityName = document.getElementById('cityInput').value;
+        cityName = cityName.split(/\s*,\s*/);
         sendCityToBackend(cityName);
     }
 });
 
 // 随机点亮多个城市
-document.addEventListener('click', async () => {
+document.getElementById('RandomCities').addEventListener('click', async () => {
+    clearHighlightedCities();
+
     let m = 10;
     let n = 1000;
     let count = Math.floor(Math.random() * (n - m + 1)) + m;
     console.log("[+] The number of random city is " + count);
 
+    console.time('[!] RandomGenCities');
     try {
         const cityNames = await randomGenCities(count);
+        console.timeEnd('[!] RandomGenCities');
+        console.time('[!] SendCityToBackend');
         sendCityToBackend(cityNames);
+        console.timeEnd('[!] SendCityToBackend');
     } catch (error) {
         console.error('Error in getting random cities:', error);
     }
@@ -45,7 +55,7 @@ document.addEventListener('click', async () => {
 
 // 发送多个城市名称到后端并接收坐标数据
 function sendCityToBackend(cityNames) {
-    const url = `http://127.0.0.1:5000/get_coordinates`;
+    const url = `http://127.0.0.1:3000/get_coordinates`;
 
     // 使用 fetch 发送 POST 请求到后端
     fetch(url, {
@@ -57,7 +67,7 @@ function sendCityToBackend(cityNames) {
     })
     .then(response => response.json())  // 解析 JSON 响应
     .then(data => {
-        if (data.coordinates) {
+        if (data.coordinates && Array.isArray(data.coordinates)) {
             // 如果找到了坐标数据，调用高亮显示函数
             data.coordinates.forEach(cityData => {
                 highlightCityOnMap(cityData.name, cityData.coordinates);
@@ -75,6 +85,7 @@ function sendCityToBackend(cityNames) {
 
 // 高亮显示多个城市
 function highlightCityOnMap(cityName, coordinates) {
+    console.time('[!] HighlightCityOnMap');
     // 验证 coordinates 是否是 GeoJSON 格式的多边形
     if (!coordinates || !Array.isArray(coordinates) || coordinates.length === 0) {
         console.error(`[Error] Invalid coordinates for city: ${cityName}`, coordinates);
@@ -82,9 +93,9 @@ function highlightCityOnMap(cityName, coordinates) {
     }
 
     // 如果之前已经有高亮的城市，先移除
-    if (window.highlightedLayers && window.highlightedLayers[cityName]) {
-        map.removeLayer(window.highlightedLayers[cityName]);
-    }
+//    if (window.highlightedLayers && window.highlightedLayers[cityName]) {
+//        map.removeLayer(window.highlightedLayers[cityName]);
+//    }
 
     // 将数据包装成 GeoJSON 格式
     const geojsonData = {
@@ -117,6 +128,7 @@ function highlightCityOnMap(cityName, coordinates) {
 
     // 自动调整地图视野，以适应多边形区域
 //    map.fitBounds(geojsonLayer.getBounds());
+    console.timeEnd('[!] HighlightCityOnMap');
 }
 
 async function randomGenCities(count) {
@@ -138,5 +150,20 @@ async function randomGenCities(count) {
     } catch (error) {
         console.error('Failed to fetch random cities:', error);
         return [];
+    }
+}
+
+function clearHighlightedCities() {
+    console.log("[+] In function 'clearHighlightedCities'.");
+    if (window.highlightedLayers) {
+        // 遍历所有已高亮的图层，将其逐个从地图中移除
+        Object.keys(window.highlightedLayers).forEach(cityName => {
+            // 直接从地图中移除图层
+            map.removeLayer(window.highlightedLayers[cityName]);
+        });
+
+        // 清空已高亮的图层记录
+        window.highlightedLayers = {};
+        console.log('[+] All highlighted cities removed.');
     }
 }
