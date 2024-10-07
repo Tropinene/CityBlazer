@@ -21,5 +21,7 @@
 
 • The **popup** feature allows users to click on highlighted cities and view their names or other details.
 
+• The geojson data is drew from https://github.com/johan/world.geo.json using script in `./utils` and stored in MongoDB. You need to initial your database and modify `backend/app.py`.
+
 This should give users a solid understanding of the app and how to use it, as well as a roadmap for future development.
 ![](./utils/eg.jpg)
